@@ -1,7 +1,7 @@
 package ignition
 
 import (
-	"github.com/coreos/ignition/config/v2_1/types"
+	"github.com/coreos/ignition/config/v2_2/types"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -72,12 +72,12 @@ func buildLink(d *schema.ResourceData, c *cache) (string, error) {
 
 	uid := d.Get("uid").(int)
 	if uid != 0 {
-		link.User = types.NodeUser{ID: &uid}
+		link.User = &types.NodeUser{ID: &uid}
 	}
 
 	gid := d.Get("gid").(int)
 	if gid != 0 {
-		link.Group = types.NodeGroup{ID: &gid}
+		link.Group = &types.NodeGroup{ID: &gid}
 	}
 
 	return c.addLink(link), handleReport(link.Validate())

@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/coreos/ignition/config/v2_1/types"
+	"github.com/coreos/ignition/config/v2_2/types"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -149,19 +149,19 @@ func buildFile(d *schema.ResourceData, c *cache) (string, error) {
 
 	file.Contents = contents
 
-	file.Mode = d.Get("mode").(int)
+	file.Mode = d.Get("mode").(*int)
 	if err := handleReport(file.ValidateMode()); err != nil {
 		return "", err
 	}
 
 	uid := d.Get("uid").(int)
 	if uid != 0 {
-		file.User = types.NodeUser{ID: &uid}
+		file.User = &types.NodeUser{ID: &uid}
 	}
 
 	gid := d.Get("gid").(int)
 	if gid != 0 {
-		file.Group = types.NodeGroup{ID: &gid}
+		file.Group = &types.NodeGroup{ID: &gid}
 	}
 
 	return c.addFile(file), nil

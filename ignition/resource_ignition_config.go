@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 
-	"github.com/coreos/ignition/config/v2_1/types"
+	"github.com/coreos/ignition/config/v2_2/types"
 )
 
 var configReferenceResource = &schema.Resource{
@@ -75,6 +75,11 @@ func dataSourceConfig() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"groups": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+			"certificate_authorities": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -162,6 +167,11 @@ func buildConfig(d *schema.ResourceData, c *cache) (*types.Config, error) {
 	}
 
 	config.Passwd, err = buildPasswd(d, c)
+	if err != nil {
+		return nil, err
+	}
+
+	config.Ignition.Security, err = buildSecurity(d, c)
 	if err != nil {
 		return nil, err
 	}
@@ -359,4 +369,25 @@ func buildPasswd(d *schema.ResourceData, c *cache) (types.Passwd, error) {
 
 	return passwd, nil
 
+}
+
+func buildSecurity(d *schema.ResourceData, c *cache) (types.Security, error) {
+	security := types.Security{TLS: types.TLS{
+		CertificateAuthorities: make([]types.CaReference, 0),
+	}}
+
+	for _, id := range d.Get("certificate_authorities").([]interface{}) {
+		if id == nil {
+			continue
+		}
+
+		s, ok := c.certificate_authorities[id.(string)]
+		if !ok {
+			return security, fmt.Errorf("invalid certicate authority %q", id)
+		}
+
+		security.TLS.CertificateAuthorities = append(security.TLS.CertificateAuthorities, *s)
+	}
+
+	return security, nil
 }

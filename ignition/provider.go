@@ -8,7 +8,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/coreos/ignition/config/v2_1/types"
+	"github.com/coreos/ignition/config/v2_2/types"
 	"github.com/coreos/ignition/config/validate/report"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
@@ -19,47 +19,50 @@ import (
 // ignition_config data resource. The key of the maps are a hash of the types
 // calculated on the type serialized to JSON.
 var globalCache = &cache{
-	disks:         make(map[string]*types.Disk, 0),
-	arrays:        make(map[string]*types.Raid, 0),
-	filesystems:   make(map[string]*types.Filesystem, 0),
-	files:         make(map[string]*types.File, 0),
-	directories:   make(map[string]*types.Directory, 0),
-	links:         make(map[string]*types.Link, 0),
-	systemdUnits:  make(map[string]*types.Unit, 0),
-	networkdUnits: make(map[string]*types.Networkdunit, 0),
-	users:         make(map[string]*types.PasswdUser, 0),
-	groups:        make(map[string]*types.PasswdGroup, 0),
+	disks:                   make(map[string]*types.Disk, 0),
+	arrays:                  make(map[string]*types.Raid, 0),
+	filesystems:             make(map[string]*types.Filesystem, 0),
+	files:                   make(map[string]*types.File, 0),
+	directories:             make(map[string]*types.Directory, 0),
+	links:                   make(map[string]*types.Link, 0),
+	systemdUnits:            make(map[string]*types.Unit, 0),
+	networkdUnits:           make(map[string]*types.Networkdunit, 0),
+	users:                   make(map[string]*types.PasswdUser, 0),
+	groups:                  make(map[string]*types.PasswdGroup, 0),
+	certificate_authorities: make(map[string]*types.CaReference, 0),
 }
 
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		DataSourcesMap: map[string]*schema.Resource{
-			"ignition_config":        dataSourceConfig(),
-			"ignition_disk":          dataSourceDisk(),
-			"ignition_raid":          dataSourceRaid(),
-			"ignition_filesystem":    dataSourceFilesystem(),
-			"ignition_file":          dataSourceFile(),
-			"ignition_directory":     dataSourceDirectory(),
-			"ignition_link":          dataSourceLink(),
-			"ignition_systemd_unit":  dataSourceSystemdUnit(),
-			"ignition_networkd_unit": dataSourceNetworkdUnit(),
-			"ignition_user":          dataSourceUser(),
-			"ignition_group":         dataSourceGroup(),
+			"ignition_config":                dataSourceConfig(),
+			"ignition_disk":                  dataSourceDisk(),
+			"ignition_raid":                  dataSourceRaid(),
+			"ignition_filesystem":            dataSourceFilesystem(),
+			"ignition_file":                  dataSourceFile(),
+			"ignition_directory":             dataSourceDirectory(),
+			"ignition_link":                  dataSourceLink(),
+			"ignition_systemd_unit":          dataSourceSystemdUnit(),
+			"ignition_networkd_unit":         dataSourceNetworkdUnit(),
+			"ignition_user":                  dataSourceUser(),
+			"ignition_group":                 dataSourceGroup(),
+			"ignition_certificate_authority": dataSourceCertifcateAuthority(),
 		},
 	}
 }
 
 type cache struct {
-	disks         map[string]*types.Disk
-	arrays        map[string]*types.Raid
-	filesystems   map[string]*types.Filesystem
-	files         map[string]*types.File
-	directories   map[string]*types.Directory
-	links         map[string]*types.Link
-	systemdUnits  map[string]*types.Unit
-	networkdUnits map[string]*types.Networkdunit
-	users         map[string]*types.PasswdUser
-	groups        map[string]*types.PasswdGroup
+	disks                   map[string]*types.Disk
+	arrays                  map[string]*types.Raid
+	filesystems             map[string]*types.Filesystem
+	files                   map[string]*types.File
+	directories             map[string]*types.Directory
+	links                   map[string]*types.Link
+	systemdUnits            map[string]*types.Unit
+	networkdUnits           map[string]*types.Networkdunit
+	users                   map[string]*types.PasswdUser
+	groups                  map[string]*types.PasswdGroup
+	certificate_authorities map[string]*types.CaReference
 
 	sync.Mutex
 }
@@ -160,6 +163,16 @@ func (c *cache) addGroup(g *types.PasswdGroup) string {
 
 	id := id(g)
 	c.groups[id] = g
+
+	return id
+}
+
+func (c *cache) addCerticateAuthority(r *types.CaReference) string {
+	c.Lock()
+	defer c.Unlock()
+
+	id := id(r)
+	c.certificate_authorities[id] = r
 
 	return id
 }

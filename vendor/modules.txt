@@ -59,9 +59,10 @@ github.com/blang/semver
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd v0.0.0-20181012123002-c6f51f82210d
 github.com/coreos/go-systemd/unit
-# github.com/coreos/ignition v0.0.0-20170904171445-ea573e121f72
-github.com/coreos/ignition/config/v2_1/types
+# github.com/coreos/ignition v0.23.0
+github.com/coreos/ignition/config/v2_2/types
 github.com/coreos/ignition/config/validate/report
+github.com/coreos/ignition/config/errors
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/fatih/color v1.7.0

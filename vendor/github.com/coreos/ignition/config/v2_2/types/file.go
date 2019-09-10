@@ -18,12 +18,20 @@ import (
 	"errors"
 	"fmt"
 
+	configErrors "github.com/coreos/ignition/config/errors"
 	"github.com/coreos/ignition/config/validate/report"
 )
 
 var (
-	ErrCompressionInvalid = errors.New("invalid compression method")
+	ErrAppendAndOverwrite = errors.New("cannot set both append and overwrite to true")
 )
+
+func (f File) Validate() report.Report {
+	if f.Overwrite != nil && *f.Overwrite && f.Append {
+		return report.ReportFromError(ErrAppendAndOverwrite, report.EntryError)
+	}
+	return report.Report{}
+}
 
 func (f File) ValidateMode() report.Report {
 	r := report.Report{}
@@ -31,6 +39,12 @@ func (f File) ValidateMode() report.Report {
 		r.Add(report.Entry{
 			Message: err.Error(),
 			Kind:    report.EntryError,
+		})
+	}
+	if f.Mode == nil {
+		r.Add(report.Entry{
+			Message: "file permissions unset, defaulting to 0000",
+			Kind:    report.EntryWarning,
 		})
 	}
 	return r
@@ -42,7 +56,7 @@ func (fc FileContents) ValidateCompression() report.Report {
 	case "", "gzip":
 	default:
 		r.Add(report.Entry{
-			Message: ErrCompressionInvalid.Error(),
+			Message: configErrors.ErrCompressionInvalid.Error(),
 			Kind:    report.EntryError,
 		})
 	}

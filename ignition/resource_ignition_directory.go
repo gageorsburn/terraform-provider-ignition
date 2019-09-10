@@ -1,7 +1,7 @@
 package ignition
 
 import (
-	"github.com/coreos/ignition/config/v2_1/types"
+	"github.com/coreos/ignition/config/v2_2/types"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -70,19 +70,19 @@ func buildDirectory(d *schema.ResourceData, c *cache) (string, error) {
 		return "", err
 	}
 
-	dir.Mode = d.Get("mode").(int)
+	dir.Mode = d.Get("mode").(*int)
 	if err := handleReport(dir.ValidateMode()); err != nil {
 		return "", err
 	}
 
 	uid := d.Get("uid").(int)
 	if uid != 0 {
-		dir.User = types.NodeUser{ID: &uid}
+		dir.User = &types.NodeUser{ID: &uid}
 	}
 
 	gid := d.Get("gid").(int)
 	if gid != 0 {
-		dir.Group = types.NodeGroup{ID: &gid}
+		dir.Group = &types.NodeGroup{ID: &gid}
 	}
 
 	return c.addDirectory(dir), nil

@@ -1,4 +1,4 @@
-// Copyright 2017 CoreOS, Inc.
+// Copyright 2018 CoreOS, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
 package types
 
 import (
-	"errors"
+	"fmt"
+
+	"github.com/coreos/ignition/config/validate/report"
 )
 
-var (
-	ErrFileIllegalMode = errors.New("illegal file mode")
-)
-
-func validateMode(m int) error {
-	if m < 0 || m > 07777 {
-		return ErrFileIllegalMode
+func (c CaReference) ValidateSource() report.Report {
+	err := validateURL(c.Source)
+	if err != nil {
+		return report.ReportFromError(
+			fmt.Errorf("invalid url %q: %v", c.Source, err),
+			report.EntryError)
 	}
-	return nil
+	return report.Report{}
 }
